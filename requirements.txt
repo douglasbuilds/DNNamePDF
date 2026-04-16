@@ -1,3 +1,7 @@
-PyMuPDF>=1.23.0
-pytesseract>=0.3.10
-Pillow>=10.0.0
+# Runtime dependencies (all permissively licensed — commercial use OK)
+pypdfium2>=4.0.0      # Apache 2.0 / BSD-3-Clause  (PDF rendering)
+pytesseract>=0.3.10   # Apache 2.0                 (Tesseract OCR wrapper)
+Pillow>=10.0.0        # MIT-CMU (HPND)             (image handling)
+
+# Test-only helper (needed only to run create_test_pdfs.py)
+reportlab>=4.0.0      # BSD-3-Clause               (sample PDF generation)

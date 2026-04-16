@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# macOS
+.DS_Store
+
+# Hotfolder runtime directories (auto-created by watch_folder.py on first run).
+# These hold working PDFs and must not be tracked.
+input/
+output/
+failed/
+
+# Sample PDFs generated locally by create_test_pdfs.py
+test_delivery_note.pdf
+test_packing_list.pdf

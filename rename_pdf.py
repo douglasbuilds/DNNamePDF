@@ -21,12 +21,12 @@ import sys
 from pathlib import Path
 
 try:
-    import fitz  # PyMuPDF
+    import pypdfium2 as pdfium
 except ImportError:
-    sys.exit("Missing dependency: run  pip install PyMuPDF")
+    sys.exit("Missing dependency: run  pip install pypdfium2")
 
 try:
-    from PIL import Image
+    from PIL import Image  # noqa: F401  (pypdfium2 returns PIL images)
 except ImportError:
     sys.exit("Missing dependency: run  pip install Pillow")
 
@@ -84,22 +84,25 @@ def extract_pif_from_pdf(pdf_path: Path) -> str | None:
     Render the first page of *pdf_path*, crop the top-right region, run
     Tesseract OCR and return the first PIF-XXXXXXXX match, or None.
     """
-    doc = fitz.open(str(pdf_path))
+    pdf = pdfium.PdfDocument(str(pdf_path))
     try:
-        page = doc[0]
-        mat = fitz.Matrix(RENDER_DPI / 72, RENDER_DPI / 72)
-        pix = page.get_pixmap(matrix=mat)
+        page = pdf[0]
+        # pypdfium2's `scale` is relative to 72 DPI
+        img = page.render(scale=RENDER_DPI / 72).to_pil()
     finally:
-        doc.close()
+        pdf.close()
 
-    # Convert pixmap to PIL Image
-    img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+    # Make sure we have an RGB PIL image (pypdfium2 may return RGBA/BGR etc.)
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+
+    width, height = img.size
 
     # Crop to the top-right region
-    left = int(pix.width * CROP_LEFT_FRAC)
-    top = int(pix.height * CROP_TOP_FRAC)
-    right = int(pix.width * CROP_RIGHT_FRAC)
-    bottom = int(pix.height * CROP_BOTTOM_FRAC)
+    left = int(width * CROP_LEFT_FRAC)
+    top = int(height * CROP_TOP_FRAC)
+    right = int(width * CROP_RIGHT_FRAC)
+    bottom = int(height * CROP_BOTTOM_FRAC)
     cropped = img.crop((left, top, right, bottom))
 
     # OCR
